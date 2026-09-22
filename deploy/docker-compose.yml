@@ -1,0 +1,25 @@
+# Lokalny SQL Server Express dla importera trace'ów SQLREP.
+# Hasło sa: ~/.config/sqlrep/sqlrep.env (MSSQL_SA_PASSWORD, chmod 600, poza repozytorium).
+# Dane: $SQLREP_DATA_DIR/mssql (domyślnie ~/sqlrep-data/mssql; właściciel uid 10001 – użytkownik mssql w kontenerze).
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2025-CU9-ubuntu-24.04
+    container_name: sqlrep-mssql
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+    env_file:
+      - ${HOME}/.config/sqlrep/sqlrep.env
+    ports:
+      - "127.0.0.1:1433:1433"
+    volumes:
+      - ${SQLREP_DATA_DIR:-${HOME}/sqlrep-data}/mssql/data:/var/opt/mssql/data
+      - ${SQLREP_DATA_DIR:-${HOME}/sqlrep-data}/mssql/log:/var/opt/mssql/log
+      - ${SQLREP_DATA_DIR:-${HOME}/sqlrep-data}/mssql/backup:/var/opt/mssql/backup
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
