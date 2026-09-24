@@ -29,3 +29,6 @@ dist-ssr
 
 # Client data and procedures (never commit)
 context/foundation/samples/
+
+# Obsidian (ustawienia lokalne)
+.obsidian/
